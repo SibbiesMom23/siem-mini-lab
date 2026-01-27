@@ -1,0 +1,25 @@
+title: Successful Login After Repeated Failures
+id: login-after-fail-002
+status: experimental
+description: Detects a successful authentication event that occurs shortly after multiple failed login attempts, which may indicate a compromised account.
+author: Stacie Smith
+date: 2026-01-26
+references:
+  - https://attack.mitre.org/techniques/T1110/
+logsource:
+  product: linux
+  service: auth
+detection:
+  failures:
+    event.type: "authentication_failure"
+  success:
+    event.type: "authentication_success"
+  condition: failures followed by success within 10m
+fields:
+  - user
+  - ip_address
+  - host
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110
