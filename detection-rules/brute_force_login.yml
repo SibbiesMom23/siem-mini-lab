@@ -1,0 +1,23 @@
+title: Brute Force Login Attempt Detection
+id: bf-login-001
+status: experimental
+description: Detects multiple failed login attempts from the same IP address within a short time window, indicating a possible brute force attack.
+author: Stacie Smith
+date: 2026-01-26
+references:
+  - https://attack.mitre.org/techniques/T1110/
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    event.type: "authentication_failure"
+  condition: selection | count(ip_address) > 5
+fields:
+  - user
+  - ip_address
+  - host
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110
