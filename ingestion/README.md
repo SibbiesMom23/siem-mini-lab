@@ -16,3 +16,6 @@ This phase covers ingesting host-based logs into Elasticsearch using Filebeat.
 
 ### Outcome
 Established a reliable ingestion pipeline for SOC analysis and detections.
+
+###Saved state
+VM saved in running state post-ingestion validation
