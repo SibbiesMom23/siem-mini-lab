@@ -48,3 +48,10 @@ This troubleshooting process reinforced the importance of validating configurati
 3. Trigger events to generate alerts
 4. Capture screenshots and add them to `screenshots/`
 
+## Evidence
+
+Below is a screenshot showing real-time log ingestion via Filebeat visible in Kibana Discover.
+
+![Kibana Discover – Filebeat Logs](screenshots/kibana-discover-filebeat.png)
+
+
