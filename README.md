@@ -20,6 +20,28 @@ This lab will include custom detection rules and alerts for:
 - `screenshots/` : Proof of alerts firing and dashboards
 - `triage-playbook.md` : Quick steps to validate and respond to alerts (optional)
 
+## Troubleshooting and Lessons Learned
+
+During implementation, several configuration and service startup issues were encountered and resolved through systematic debugging and validation.
+
+**Filebeat service startup failures**
+- Initial Filebeat service restarts failed due to output configuration and host resolution issues.
+- Configuration syntax was validated using `filebeat test config`.
+- Elasticsearch connectivity was confirmed using `filebeat test output`.
+- Output host configuration was corrected and verified.
+
+**Elasticsearch and Kibana connectivity**
+- Elasticsearch connectivity was validated prior to ingest pipeline setup.
+- Kibana accessibility was confirmed via localhost once services were fully initialized.
+
+**Outcome**
+- Filebeat successfully ingested system logs
+- Data streams were created
+- Logs became visible and searchable in Kibana Discover
+
+This troubleshooting process reinforced the importance of validating configurations incrementally and separating configuration errors from service or network issues.
+
+
 ## Next Steps
 1. Add detection rule documentation in `detection-rules/`
 2. Create alerts in Kibana (threshold or query-based rules)
