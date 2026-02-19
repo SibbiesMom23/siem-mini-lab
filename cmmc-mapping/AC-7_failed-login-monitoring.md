@@ -19,6 +19,7 @@ This SIEM lab demonstrates monitoring of failed SSH authentication attempts.
 
 ### Sample Detection Query
 
+event.category:authentication AND event.outcome.failure
 
 ## Control Relevance
 
