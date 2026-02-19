@@ -1,23 +1,38 @@
-title: Brute Force Login Attempt Detection
-id: bf-login-001
-status: experimental
-description: Detects multiple failed login attempts from the same IP address within a short time window, indicating a possible brute force attack.
+rule_id: BR-001
+name: SSH Brute Force Threshold Detection
+description: >
+  Detects potential SSH brute-force activity by identifying
+  multiple failed authentication attempts from a single source IP
+  within a short time window.
+
 author: Stacie Smith
-date: 2026-01-26
-references:
-  - https://attack.mitre.org/techniques/T1110/
-logsource:
-  product: linux
-  service: auth
+date: 2026-02-18
+severity: medium
+
+data_source:
+  - Filebeat
+  - /var/log/lab/auth.log
+
 detection:
-  selection:
-    event.type: "authentication_failure"
-  condition: selection | count(ip_address) > 5
-fields:
-  - user
-  - ip_address
-  - host
-level: medium
-tags:
-  - attack.credential_access
-  - attack.t1110
+  type: threshold
+  query: >
+    event.category:authentication AND event.outcome:failure
+  group_by:
+    - source.ip
+  threshold:
+    count: 5
+    time_window: 5m
+
+mitre_attack:
+  tactic: Credential Access
+  technique: T1110 - Brute Force
+
+cmmc_mapping:
+  - AU.2.042 - Audit Review, Analysis, and Reporting
+  - IR.2.093 - Detect and report events
+
+response:
+  - Investigate source.ip for repeated failures
+  - Check for successful login following failures
+  - Consider IP blocking if malicious
+
