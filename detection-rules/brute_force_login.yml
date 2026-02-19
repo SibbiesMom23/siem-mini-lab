@@ -36,3 +36,19 @@ response:
   - Check for successful login following failures
   - Consider IP blocking if malicious
 
+false_positives:
+  - User mistyping password multiple times
+  - Automated vulnerability scanners in internal testing
+  - Misconfigured service repeatedly attempting authentication
+
+assumptions:
+  - Logs are properly ingested via Filebeat
+  - Authentication logs are not tampered with
+  - Source IP field is reliably parsed from SSH logs
+
+validation_steps:
+  - Generate 5 failed login attempts from same IP
+  - Confirm alert triggers in Kibana
+  - Verify source.ip grouping functions correctly
+
+
