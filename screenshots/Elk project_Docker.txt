@@ -1,0 +1,162 @@
+Last login: Sun Feb 15 15:12:34 on console
+stacieaolivella@iMac ~ % cd ~/path/to/your/siem-mini-lab
+cd: no such file or directory: /Users/stacieaolivella/path/to/your/siem-mini-lab
+stacieaolivella@iMac ~ % cd /Users/stacieaolivella/Desktop/siem-mini-lab
+stacieaolivella@iMac siem-mini-lab % pwd
+/Users/stacieaolivella/Desktop/siem-mini-lab
+stacieaolivella@iMac siem-mini-lab % ls
+ingestion
+stacieaolivella@iMac siem-mini-lab % cd ~
+stacieaolivella@iMac ~ % find . -maxxdepth 5 -type d -name "siem-mini-lab" 2>/dev/null
+stacieaolivella@iMac ~ % find . -maxdepth 5 -type d -name "siem-mini-lab" 2>/dev/null
+./Desktop/siem-mini-lab
+stacieaolivella@iMac ~ % cd ~/Documents/GitHub/siem-mini-lab
+cd: no such file or directory: /Users/stacieaolivella/Documents/GitHub/siem-mini-lab
+stacieaolivella@iMac ~ % cd ~/Desktop/siem-mini-lab
+stacieaolivella@iMac siem-mini-lab % pwd
+/Users/stacieaolivella/Desktop/siem-mini-lab
+stacieaolivella@iMac siem-mini-lab % ls
+ingestion
+stacieaolivella@iMac siem-mini-lab % cd ~/Desktop/siem-mini-lab
+stacieaolivella@iMac siem-mini-lab % ls
+ingestion
+stacieaolivella@iMac siem-mini-lab % git status
+fatal: not a git repository (or any of the parent directories): .git
+stacieaolivella@iMac siem-mini-lab % cd~
+zsh: command not found: cd~
+stacieaolivella@iMac siem-mini-lab % git clone https://github.com/SibbiesMom23/siem-mini-lab.git
+Cloning into 'siem-mini-lab'...
+remote: Enumerating objects: 64, done.
+remote: Counting objects: 100% (64/64), done.
+remote: Compressing objects: 100% (55/55), done.
+remote: Total 64 (delta 15), reused 0 (delta 0), pack-reused 0 (from 0)
+Receiving objects: 100% (64/64), 1.58 MiB | 3.82 MiB/s, done.
+Resolving deltas: 100% (15/15), done.
+stacieaolivella@iMac siem-mini-lab % cd siem-mini-lab
+stacieaolivella@iMac siem-mini-lab % git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+stacieaolivella@iMac siem-mini-lab % mkdir -p elk-stack/{logstash,pipelines,logs,scripts}
+stacieaolivella@iMac siem-mini-lab % ls elk-stack
+logs		logstash	pipelines	scripts
+stacieaolivella@iMac siem-mini-lab % >....                                      
+    container_name: elk-logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./pipelines:/usr/share/logstash/pipeline:ro
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.12.2
+    container_name: elk-filebeat
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/var/log/lab:ro
+    depends_on:
+      - logstash
+
+volumes:
+  esdata:
+YAML
+
+stacieaolivella@iMac siem-mini-lab % cat > elk-stack/filebeat.yml <<'YAML'
+filebeat.inputs:
+  - type: filestream
+    id: authlog
+    enabled: true
+    paths:
+      - /var/log/lab/auth.log
+    fields:
+      log_type: auth
+    fields_under_root: true
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+setup.ilm.enabled: false
+logging.level: info
+YAML
+
+stacieaolivella@iMac siem-mini-lab % cat > elk-stack/logstash/logstash.yml <<'YAML'
+http.host: "0.0.0.0"
+xpack.monitoring.enabled: false
+YAML
+
+stacieaolivella@iMac siem-mini-lab % >....                                      
+
+  if "Accepted" in [message] {
+    mutate {
+      replace => { "event.outcome" => "success" }
+      add_tag => ["auth_success"]
+    }
+  } else if "Failed" in [message] {
+    mutate {
+      replace => { "event.outcome" => "failure" }
+      add_tag => ["auth_failure", "possible_bruteforce"]
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://elasticsearch:9200"]
+    index => "lab-auth-%{+YYYY.MM.dd}"
+  }
+  stdout { codec => rubydebug }
+}
+CONF
+
+stacieaolivella@iMac siem-mini-lab % touch elk-stack/logs/auth.log
+stacieaolivella@iMac siem-mini-lab % cd elk-stack
+stacieaolivella@iMac elk-stack % docker compose up -d
+zsh: command not found: docker
+stacieaolivella@iMac elk-stack % docker --version
+Docker version 29.2.0, build 0b9d198
+stacieaolivella@iMac elk-stack % docker compose version
+Docker Compose version v5.0.2
+stacieaolivella@iMac elk-stack % cd ~/siem-mini-lab/elk-stack
+cd: no such file or directory: /Users/stacieaolivella/siem-mini-lab/elk-stack
+stacieaolivella@iMac elk-stack % pwd
+/Users/stacieaolivella/Desktop/siem-mini-lab/siem-mini-lab/elk-stack
+stacieaolivella@iMac elk-stack % ls
+docker-compose.yml	logs			pipelines
+filebeat.yml		logstash		scripts
+stacieaolivella@iMac elk-stack % docker compose up -d
+WARN[0000] /Users/stacieaolivella/Desktop/siem-mini-lab/siem-mini-lab/elk-stack/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[+] up 53/53
+ ✔ Image docker.elastic.co/elasticsearch/elasticsearch:8.12.2 Pulled       55.8s
+ ✔ Image docker.elastic.co/logstash/logstash:8.12.2           Pulled       24.1s
+ ✔ Image docker.elastic.co/kibana/kibana:8.12.2               Pulled       55.8s
+ ✔ Image docker.elastic.co/beats/filebeat:8.12.2              Pulled       18.2s
+ ✔ Network elk-stack_default                                  Created      0.0s
+ ✔ Volume elk-stack_esdata                                    Created      0.0s
+ ✔ Container elk-elasticsearch                                Created      3.8s
+ ✔ Container elk-kibana                                       Created      0.4s
+ ✔ Container elk-logstash                                     Created      0.5s
+ ✔ Container elk-filebeat                                     Created      0.3s
+stacieaolivella@iMac elk-stack % docker ps
+CONTAINER ID   IMAGE                                                  COMMAND                  CREATED          STATUS          PORTS                                         NAMES
+1643c62b5909   docker.elastic.co/beats/filebeat:8.12.2                "/usr/bin/tini -- /u…"   17 seconds ago   Up 11 seconds                                                 elk-filebeat
+d7d58288d667   docker.elastic.co/logstash/logstash:8.12.2             "/usr/local/bin/dock…"   18 seconds ago   Up 11 seconds   0.0.0.0:5044->5044/tcp, [::]:5044->5044/tcp   elk-logstash
+eb4334553d6d   docker.elastic.co/kibana/kibana:8.12.2                 "/bin/tini -- /usr/l…"   18 seconds ago   Up 16 seconds   0.0.0.0:5601->5601/tcp, [::]:5601->5601/tcp   elk-kibana
+d70a9bad6480   docker.elastic.co/elasticsearch/elasticsearch:8.12.2   "/bin/tini -- /usr/l…"   22 seconds ago   Up 16 seconds   0.0.0.0:9200->9200/tcp, [::]:9200->9200/tcp   elk-elasticsearch
+537539d1f5c0   docker/welcome-to-docker:latest                        "/docker-entrypoint.…"   4 minutes ago    Up 4 minutes    0.0.0.0:8088->80/tcp, [::]:8088->80/tcp       welcome-to-docker
+stacieaolivella@iMac elk-stack % pwd
+/Users/stacieaolivella/Desktop/siem-mini-lab/siem-mini-lab/elk-stack
+stacieaolivella@iMac elk-stack % ls -la
+total 8
+drwxr-xr-x   8 stacieaolivella  staff   256 Feb 18 00:00 .
+drwxr-xr-x  10 stacieaolivella  staff   320 Feb 18 00:00 ..
+-rw-r--r--   1 stacieaolivella  staff  1215 Feb 18 00:00 docker-compose.yml
+-rw-r--r--   1 stacieaolivella  staff   265 Feb 18 00:00 filebeat.yml
+drwxr-xr-x   3 stacieaolivella  staff    96 Feb 18 00:00 logs
+drwxr-xr-x   3 stacieaolivella  staff    96 Feb 18 00:00 logstash
+drwxr-xr-x   3 stacieaolivella  staff    96 Feb 18 00:00 pipelines
+drwxr-xr-x   2 stacieaolivella  staff    64 Feb 17 23:59 scripts
+stacieaolivella@iMac elk-stack % 
